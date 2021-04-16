@@ -5,6 +5,7 @@ const admin = require("firebase-admin");
 const fileUpload = require('express-fileupload');
 const fs = require('fs-extra');
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectId
 require('dotenv').config()
 
 
@@ -46,6 +47,18 @@ client.connect(err => {
   const orderCollection = client.db("creative").collection("orders");
   const adminCollection = client.db("creative").collection("admin");
   const reviewCollection = client.db("creative").collection("review");
+
+  //update items
+  app.patch('/update/:id', (req, res)=>{
+    orderCollection.updateOne({_id:ObjectId(req.params.id)},
+    {
+      $set:{status:req.body.select}
+    })
+    .then(result => {
+      res.send(result.modifiedCount > 0)
+    })
+    
+  })
 
   //find all review
 
@@ -143,6 +156,7 @@ client.connect(err => {
     const price = req.body.price;
     const photo = req.body.photo;
     const course = req.body.course;
+    const status = req.body.status;
     const filePath = `${__dirname}/service/${file.name}`;
     file.mv(filePath, err =>{
       if(err){
@@ -159,7 +173,7 @@ client.connect(err => {
         size:req.files.file.size,
         img:Buffer.from(encImg, 'base64')
       }
-      orderCollection.insertOne({image, name, details, photo, email, details, price, course})
+      orderCollection.insertOne({image, name, details, photo, email, details, price, course, status})
       .then(result =>{
         fs.remove(filePath, err => {
           if(err){
@@ -181,6 +195,7 @@ client.connect(err => {
       const file = req.files.file;
       const title = req.body.title;
       const description = req.body.description;
+      const status = req.body.status;
       const filePath = `${__dirname}/service/${file.name}`;
       file.mv(filePath, err =>{
           if(err){
@@ -194,7 +209,7 @@ client.connect(err => {
             size:req.files.file.size,
             img: Buffer.from(encImg, 'base64')
           }
-          serviceCollection.insertOne({title, description, image})
+          serviceCollection.insertOne({title, description, image, status})
           .then(result => {
             fs.remove(filePath, err => {
               if(err){
@@ -216,4 +231,4 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.listen(port)
+app.listen(process.env.PORT || port)
