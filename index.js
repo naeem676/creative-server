@@ -48,7 +48,7 @@ client.connect(err => {
   const adminCollection = client.db("creative").collection("admin");
   const reviewCollection = client.db("creative").collection("review");
 
-  //update items
+  //update items use onchange
   app.patch('/update/:id', (req, res)=>{
     orderCollection.updateOne({_id:ObjectId(req.params.id)},
     {
@@ -104,7 +104,7 @@ client.connect(err => {
       res.send(documents)
     })
   })
-  ////////////////
+  ////////////////find all service for admin 
 
   app.get('/findService', (req, res)=>{
     serviceCollection.find({})
